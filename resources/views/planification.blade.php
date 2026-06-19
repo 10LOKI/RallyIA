@@ -164,6 +164,56 @@
             </div>
         </div>
     </div>
+
+    {{-- ESTIMATION COÛT + CONSEILS --}}
+    <section class="grid lg:grid-cols-5 gap-6 mt-6">
+        {{-- breakdown coût --}}
+        <div class="lg:col-span-3 glass rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="font-bold text-white flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">💰</span>
+                    Estimation du coût de transport
+                </h3>
+                <span class="text-[10px] uppercase tracking-widest text-slate-400">{{ $pred['type'] }} · {{ $pred['routing'] }}</span>
+            </div>
+
+            <div class="space-y-1">
+                @foreach ($cost['postes'] as $p)
+                    <div class="flex items-center justify-between py-2.5 px-3 rounded-lg {{ !empty($p['risk']) ? 'bg-amber-500/10' : 'hover:bg-white/5' }}">
+                        <div>
+                            <div class="text-sm text-white {{ !empty($p['risk']) ? 'text-amber-300' : '' }}">{{ $p['label'] }}</div>
+                            <div class="text-xs text-slate-500">{{ $p['note'] }}</div>
+                        </div>
+                        <div class="text-sm font-semibold text-white tabular-nums">{{ number_format($p['mad'], 0, ',', ' ') }} MAD</div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-white/10 flex items-end justify-between">
+                <div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wide">Total estimé</div>
+                    <div class="text-3xl font-extrabold grad-text tabular-nums">{{ number_format($cost['total_mad'], 0, ',', ' ') }} MAD</div>
+                </div>
+                <div class="text-right text-sm text-slate-400">
+                    ≈ {{ number_format($cost['total_usd'], 0, ',', ' ') }} USD<br>
+                    ≈ {{ number_format($cost['total_eur'], 0, ',', ' ') }} EUR
+                </div>
+            </div>
+            <p class="mt-3 text-[11px] text-slate-500">Estimation indicative hors taxes locales · acheminement terrestre final non inclus.</p>
+        </div>
+
+        {{-- conseils IA --}}
+        <div class="lg:col-span-2 glass glow rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute -top-16 -right-10 w-56 h-56 bg-brand/15 blur-3xl rounded-full"></div>
+            <div class="relative">
+                <div class="flex items-center gap-2 text-brand font-bold text-sm">
+                    <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">💡</span>
+                    Conseils SmartPort — optimiser & sécuriser
+                </div>
+                <p class="mt-4 text-white leading-relaxed text-[15px]">{{ $conseils }}</p>
+            </div>
+        </div>
+    </section>
 @endsection
 
 @push('scripts')
