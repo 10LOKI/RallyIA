@@ -46,11 +46,15 @@ class ClaudeService
             $res = Http::timeout(90)->post(config('services.ollama.url') . '/api/chat', [
                 'model' => config('services.ollama.model'),
                 'stream' => false,
+                'keep_alive' => '30m',           // garde le modele en RAM => appels suivants rapides
                 'messages' => [
                     ['role' => 'system', 'content' => $system],
                     ['role' => 'user', 'content' => $prompt],
                 ],
-                'options' => ['temperature' => 0.4],
+                'options' => [
+                    'temperature' => 0.4,
+                    'num_predict' => 320,        // limite la generation => reponses plus rapides
+                ],
             ]);
 
             if ($res->failed()) {
