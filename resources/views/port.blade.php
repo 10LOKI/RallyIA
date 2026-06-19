@@ -40,13 +40,28 @@
                     </span>
                     <span class="text-slate-400 text-sm">{{ $best['risk'] }}/100</span>
                 </div>
+
+                <div class="mt-5 pt-5 border-t border-white/10 grid grid-cols-2 gap-3">
+                    <div>
+                        <div class="text-2xl font-extrabold text-brand tabular-nums">{{ number_format($economies['mad'], 0, ',', ' ') }}</div>
+                        <div class="text-[11px] text-slate-400 uppercase tracking-wide">MAD économisés</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-extrabold text-white tabular-nums">{{ $economies['heures'] }}h</div>
+                        <div class="text-[11px] text-slate-400 uppercase tracking-wide">attente évitée</div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <div class="grid lg:grid-cols-5 gap-6">
         {{-- MAP --}}
-        <div class="lg:col-span-2 glass rounded-2xl p-2">
+        <div class="lg:col-span-2 glass rounded-2xl p-2 relative">
+            <div class="absolute top-4 left-4 z-[1000] flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full {{ $vesselsLive ? 'bg-brand/20 text-brand' : 'bg-amber-500/20 text-amber-300' }}">
+                <span class="w-1.5 h-1.5 rounded-full {{ $vesselsLive ? 'bg-brand animate-pulse' : 'bg-amber-300' }}"></span>
+                {{ $vesselsLive ? 'Navires AIS en direct' : 'Navires (démo)' }} · {{ $nearby->count() }}
+            </div>
             <div id="map" class="w-full h-[420px] rounded-xl"></div>
         </div>
 
@@ -94,6 +109,39 @@
             </div>
         </div>
     </div>
+
+    {{-- NAVIRES ATTENDUS (AIS) --}}
+    <section class="mt-6 glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">🚢</span>
+                <h3 class="font-bold text-white">Navires attendus à {{ $port->nom }}</h3>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full {{ $vesselsLive ? 'bg-brand/15 text-brand' : 'bg-amber-500/15 text-amber-300' }}">
+                {{ $arrivals->count() }} en approche · {{ $vesselsLive ? 'AIS live' : 'démo' }}
+            </span>
+        </div>
+
+        @if ($arrivals->isEmpty())
+            <p class="text-slate-400 text-sm">Aucun navire avec destination déclarée vers ce port actuellement.</p>
+        @else
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                @foreach ($arrivals as $v)
+                    <div class="rounded-xl bg-white/5 border border-white/5 p-4 hover:bg-white/10 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="font-semibold text-white truncate">{{ $v->name ?? 'Navire '.$v->mmsi }}</div>
+                            <span class="text-lg">{{ ($v->sog ?? 0) > 0.5 ? '🚢' : '⚓' }}</span>
+                        </div>
+                        <div class="mt-1 text-xs text-slate-400">{{ $v->ship_type ?? 'Navire' }} · {{ $v->nav_status ?? '' }}</div>
+                        <div class="mt-3 flex items-center justify-between text-sm">
+                            <span class="text-slate-300">ETA <span class="text-white font-semibold">{{ $v->eta ?? '—' }}</span></span>
+                            <span class="text-brand font-semibold">{{ $v->sog !== null ? $v->sog.' nds' : '' }}</span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </section>
 
     {{-- NEWS / CONTEXTE ECO --}}
     @php
@@ -155,6 +203,23 @@
     }).addTo(map);
 
     L.marker([{{ $port->lat }}, {{ $port->lng }}]).addTo(map)
-        .bindPopup('<b>{{ $port->nom }}</b><br>{{ $port->ville }}').openPopup();
+        .bindPopup('<b>{{ $port->nom }}</b><br>{{ $port->ville }}');
+
+    // Navires AIS (reels ou demo)
+    const vessels = @json($nearbyJs);
+
+    vessels.forEach(v => {
+        if (!v.lat || !v.lng) return;
+        const moving = (v.sog ?? 0) > 0.5;
+        const icon = L.divIcon({
+            className: '',
+            html: `<div style="font-size:18px; filter: drop-shadow(0 0 4px rgba(16,229,164,.6)); transform: rotate(0deg)">${moving ? '🚢' : '⚓'}</div>`,
+            iconSize: [20, 20], iconAnchor: [10, 10],
+        });
+        L.marker([v.lat, v.lng], { icon }).addTo(map).bindPopup(
+            `<b>${v.name ?? 'Navire'}</b><br>${v.type ?? ''} ${v.status ? '· '+v.status : ''}` +
+            `${v.dest ? '<br>→ '+v.dest : ''}${v.sog != null ? '<br>'+v.sog+' nœuds' : ''}`
+        );
+    });
 </script>
 @endpush

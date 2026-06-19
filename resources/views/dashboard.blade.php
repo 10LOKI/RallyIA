@@ -31,7 +31,10 @@
     {{-- KPIs PORTS --}}
     <div class="flex items-center justify-between mb-5">
         <h2 class="text-xl font-bold text-white">État des ports — aujourd'hui</h2>
-        <span class="text-sm text-slate-400">Indice de risque de saturation</span>
+        <span class="flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full {{ $vesselsLive ? 'bg-brand/15 text-brand' : 'bg-amber-500/15 text-amber-300' }}">
+            <span class="w-1.5 h-1.5 rounded-full {{ $vesselsLive ? 'bg-brand animate-pulse' : 'bg-amber-300' }}"></span>
+            🚢 {{ $vesselsTotal }} navires {{ $vesselsLive ? 'en direct (AIS)' : '(démo)' }}
+        </span>
     </div>
     <div class="grid md:grid-cols-3 gap-5 mb-12">
         @foreach ($stats as $s)
@@ -56,9 +59,22 @@
                     <div class="h-full rounded-full transition-all" style="width: {{ $s['risk'] }}%; background: {{ $s['level']['hex'] }}"></div>
                 </div>
 
-                <div class="mt-4 flex justify-between text-xs text-slate-400">
-                    <span>Saturation {{ $s['saturation'] }}%</span>
-                    <a href="{{ route('port', ['port' => $s['port']->id]) }}" class="text-brand font-semibold opacity-0 group-hover:opacity-100 transition">Détails →</a>
+                <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+                    <div class="rounded-lg bg-white/5 py-2">
+                        <div class="text-sm font-bold text-white">{{ $s['saturation'] }}%</div>
+                        <div class="text-[10px] text-slate-400">Saturation</div>
+                    </div>
+                    <div class="rounded-lg bg-white/5 py-2">
+                        <div class="text-sm font-bold text-white">{{ $s['vessels'] }}</div>
+                        <div class="text-[10px] text-slate-400">Navires</div>
+                    </div>
+                    <div class="rounded-lg bg-white/5 py-2">
+                        <div class="text-sm font-bold text-white">{{ $s['arrivals'] }}</div>
+                        <div class="text-[10px] text-slate-400">Arrivées</div>
+                    </div>
+                </div>
+                <div class="mt-3 text-right">
+                    <a href="{{ route('port', ['port' => $s['port']->id]) }}" class="text-xs text-brand font-semibold opacity-0 group-hover:opacity-100 transition">Détails →</a>
                 </div>
             </div>
         @endforeach
@@ -90,8 +106,8 @@
 
     {{-- SHIPMENTS --}}
     <h2 class="text-xl font-bold text-white mb-5">Conteneurs suivis</h2>
-    <div class="glass rounded-2xl overflow-hidden">
-        <table class="w-full text-sm">
+    <div class="glass rounded-2xl overflow-x-auto">
+        <table class="w-full text-sm min-w-[640px]">
             <thead class="text-left text-slate-400 border-b border-white/10">
                 <tr>
                     <th class="px-6 py-4 font-medium">Référence</th>

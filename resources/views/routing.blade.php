@@ -62,6 +62,25 @@
                 </div>
             </div>
 
+            {{-- ROI --}}
+            <div class="glass glow rounded-2xl p-6">
+                <div class="text-xs font-bold uppercase tracking-widest text-brand mb-4">Économies vs trajet non optimisé</div>
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                        <div class="text-2xl font-extrabold text-white tabular-nums">{{ $economies['minutes'] }}</div>
+                        <div class="text-[10px] text-slate-400 uppercase">min gagnées</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-extrabold text-white tabular-nums">{{ $economies['litres'] }}</div>
+                        <div class="text-[10px] text-slate-400 uppercase">L gasoil</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-extrabold text-brand tabular-nums">{{ $economies['mad'] }}</div>
+                        <div class="text-[10px] text-slate-400 uppercase">MAD</div>
+                    </div>
+                </div>
+            </div>
+
             {{-- trajet --}}
             <div class="glass rounded-2xl p-6">
                 <div class="flex items-center gap-3">
@@ -105,5 +124,20 @@
     } else {
         map.fitBounds([start, end], { padding: [60, 60] });
     }
+
+    // Navires AIS autour du port de depart
+    const vessels = @json($nearbyJs);
+    vessels.forEach(v => {
+        if (!v.lat || !v.lng) return;
+        const moving = (v.sog ?? 0) > 0.5;
+        const icon = L.divIcon({
+            className: '',
+            html: `<div style="font-size:16px; filter: drop-shadow(0 0 3px rgba(16,229,164,.5))">${moving ? '🚢' : '⚓'}</div>`,
+            iconSize: [18, 18], iconAnchor: [9, 9],
+        });
+        L.marker([v.lat, v.lng], { icon }).addTo(map).bindPopup(
+            `<b>${v.name ?? 'Navire'}</b><br>${v.type ?? ''}${v.dest ? '<br>→ '+v.dest : ''}${v.sog != null ? '<br>'+v.sog+' nœuds' : ''}`
+        );
+    });
 </script>
 @endpush

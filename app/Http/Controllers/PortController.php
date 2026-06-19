@@ -6,6 +6,8 @@ use App\Models\Port;
 use App\Services\ClaudeService;
 use App\Services\NewsService;
 use App\Services\PortSaturationService;
+use App\Services\SavingsService;
+use App\Services\VesselService;
 use Illuminate\Http\Request;
 
 class PortController extends Controller
@@ -15,6 +17,8 @@ class PortController extends Controller
         PortSaturationService $sat,
         ClaudeService $claude,
         NewsService $news,
+        VesselService $vessels,
+        SavingsService $savings,
     ) {
         $ports = Port::all();
         $selectedId = (int) $request->query('port', $ports->first()?->id);
@@ -23,6 +27,21 @@ class PortController extends Controller
         // News reelles + sentiment eco (NewsAPI -> Claude)
         $headlines = $news->headlines();
         $sentiment = $news->sentiment($headlines);
+
+        // Navires AIS (reel si flux actif, sinon mock)
+        $nearby = $vessels->nearPort($port, 70);
+        $arrivals = $vessels->expectedArrivals($port);
+        $vesselsLive = $vessels->isLive();
+
+        $nearbyJs = $nearby->map(fn ($v) => [
+            'name' => $v->name,
+            'lat' => $v->lat,
+            'lng' => $v->lng,
+            'type' => $v->ship_type,
+            'dest' => $v->destination,
+            'sog' => $v->sog,
+            'status' => $v->nav_status,
+        ])->values();
 
         $forecast = $sat->forecast($port);
 
@@ -38,7 +57,8 @@ class PortController extends Controller
         }
 
         $best = $forecast['best'];
-        $reco = $this->reco($claude, $port, $best, $forecast['rows'], $sentiment);
+        $economies = $savings->port($forecast['rows'], $best);
+        $reco = $this->reco($claude, $port, $best, $forecast['rows'], $sentiment, $arrivals->count(), $economies);
 
         return view('port', [
             'ports' => $ports,
@@ -47,10 +67,15 @@ class PortController extends Controller
             'reco' => $reco,
             'headlines' => $headlines,
             'sentiment' => $sentiment,
+            'nearby' => $nearby,
+            'nearbyJs' => $nearbyJs,
+            'arrivals' => $arrivals,
+            'vesselsLive' => $vesselsLive,
+            'economies' => $economies,
         ]);
     }
 
-    private function reco(ClaudeService $claude, Port $port, array $best, array $rows, array $sentiment): string
+    private function reco(ClaudeService $claude, Port $port, array $best, array $rows, array $sentiment, int $arrivals, array $economies): string
     {
         $resume = collect($rows)->map(fn ($r) =>
             "{$r['label_jour']}: saturation {$r['saturation_pct']}%, meteo {$r['meteo_score']}/100, sentiment eco {$r['news_sentiment']}, risque {$r['risk']}/100"
@@ -62,15 +87,17 @@ class PortController extends Controller
             . "Reponds en francais, ton professionnel et concret, 3-4 phrases max. Pas de markdown.";
 
         $prompt = "Port: {$port->nom} ({$port->ville}).\n"
+            . "Navires actuellement attendus a ce port (AIS): {$arrivals}.\n"
             . "Contexte economique actuel (actualite reelle): {$sentiment['resume']} (sentiment {$sentiment['score']}/100).\n"
             . "Previsions 7 jours:\n{$resume}\n\n"
             . "Le meilleur creneau identifie est {$best['label_jour']} (risque {$best['risk']}/100). "
-            . "Donne une recommandation claire: quel jour viser, pourquoi, et quel benefice concret (eviter frais de stockage / retards).";
+            . "Economie estimee sur ce creneau: {$economies['mad']} MAD et {$economies['heures']}h d'attente evitees.\n"
+            . "Donne une recommandation claire: quel jour viser, pourquoi, et chiffre le benefice (MAD + heures economisees).";
 
         $mock = "Recommandation LogiMind : visez une arrivée le {$best['label_jour']} sur {$port->nom}. "
             . "Le risque de saturation y est le plus bas ({$best['risk']}/100), avec une fenêtre météo favorable. "
             . "Contexte économique : {$sentiment['resume']} "
-            . "En ciblant ce créneau, vous évitez les files d'attente au mouillage et réduisez les frais de surestaries.";
+            . "En ciblant ce créneau, vous économisez environ {$economies['mad']} MAD de surestaries et {$economies['heures']}h d'attente au mouillage.";
 
         return $claude->ask($system, $prompt, $mock);
     }

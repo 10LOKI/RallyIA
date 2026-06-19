@@ -43,27 +43,39 @@
 <body class="font-sans text-slate-200 antialiased min-h-screen">
 
     <header class="sticky top-0 z-30 glass">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-deep grid place-items-center text-ink font-extrabold text-lg">L</div>
-                <div>
-                    <div class="font-extrabold tracking-tight leading-none text-white">LogiMind <span class="text-brand">Maroc</span></div>
-                    <div class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Copilote logistique IA</div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="h-16 flex items-center justify-between gap-3">
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-deep grid place-items-center text-ink font-extrabold text-lg">L</div>
+                    <div>
+                        <div class="font-extrabold tracking-tight leading-none text-white">LogiMind <span class="text-brand">Maroc</span></div>
+                        <div class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Copilote logistique IA</div>
+                    </div>
+                </a>
+                {{-- nav desktop --}}
+                <nav class="hidden lg:flex items-center gap-1 text-sm">
+                    <a href="{{ route('dashboard') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('dashboard') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Tableau de bord</a>
+                    <a href="{{ route('parcours') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('parcours') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Parcours</a>
+                    <a href="{{ route('planification') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('planification') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Planification ETA</a>
+                    <a href="{{ route('port') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('port') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Portuaire</a>
+                    <a href="{{ route('routing') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('routing') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Fluidité urbaine</a>
+                </nav>
+                <div class="hidden lg:flex items-center gap-2 text-xs text-slate-400 shrink-0">
+                    <span class="w-2 h-2 rounded-full bg-brand animate-pulse"></span> Temps réel
                 </div>
-            </a>
-            <nav class="flex items-center gap-1 text-sm">
-                @php $r = request()->routeIs(...); @endphp
-                <a href="{{ route('dashboard') }}" class="px-4 py-2 rounded-lg transition {{ request()->routeIs('dashboard') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Tableau de bord</a>
-                <a href="{{ route('port') }}" class="px-4 py-2 rounded-lg transition {{ request()->routeIs('port') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Optimisation portuaire</a>
-                <a href="{{ route('routing') }}" class="px-4 py-2 rounded-lg transition {{ request()->routeIs('routing') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Fluidité urbaine</a>
-            </nav>
-            <div class="hidden md:flex items-center gap-2 text-xs text-slate-400">
-                <span class="w-2 h-2 rounded-full bg-brand animate-pulse"></span> Données temps réel
             </div>
+            {{-- nav mobile (scrollable) --}}
+            <nav class="lg:hidden flex items-center gap-1 text-sm overflow-x-auto pb-2 -mt-1">
+                <a href="{{ route('dashboard') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('dashboard') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Tableau de bord</a>
+                <a href="{{ route('parcours') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('parcours') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Parcours</a>
+                <a href="{{ route('planification') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('planification') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Planification ETA</a>
+                <a href="{{ route('port') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('port') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Portuaire</a>
+                <a href="{{ route('routing') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('routing') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Fluidité urbaine</a>
+            </nav>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-10">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         @yield('content')
     </main>
 

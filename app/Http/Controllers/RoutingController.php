@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Port;
 use App\Services\ClaudeService;
 use App\Services\RoutingService;
+use App\Services\SavingsService;
+use App\Services\VesselService;
 use Illuminate\Http\Request;
 
 class RoutingController extends Controller
@@ -18,7 +20,7 @@ class RoutingController extends Controller
         'Fes centre'        => [34.0331, -5.0003],
     ];
 
-    public function index(Request $request, RoutingService $routing, ClaudeService $claude)
+    public function index(Request $request, RoutingService $routing, ClaudeService $claude, VesselService $vessels, SavingsService $savings)
     {
         $ports = Port::all();
         $portId = (int) $request->query('port', $ports->first()?->id);
@@ -32,7 +34,20 @@ class RoutingController extends Controller
 
         $route = $routing->route($port->lat, $port->lng, $destLat, $destLng);
 
-        $conseil = $this->conseil($claude, $port, $villeNom, $route);
+        $economies = $savings->route($route['distance_km'] ?? 0, $route['duree_min'] ?? 0);
+
+        $conseil = $this->conseil($claude, $port, $villeNom, $route, $economies);
+
+        // Navires autour du port de depart (reel ou mock)
+        $nearbyJs = $vessels->nearPort($port, 70)->map(fn ($v) => [
+            'name' => $v->name,
+            'lat' => $v->lat,
+            'lng' => $v->lng,
+            'type' => $v->ship_type,
+            'dest' => $v->destination,
+            'sog' => $v->sog,
+            'status' => $v->nav_status,
+        ])->values();
 
         return view('routing', [
             'ports' => $ports,
@@ -42,10 +57,13 @@ class RoutingController extends Controller
             'dest' => ['lat' => $destLat, 'lng' => $destLng],
             'route' => $route,
             'conseil' => $conseil,
+            'nearbyJs' => $nearbyJs,
+            'vesselsLive' => $vessels->isLive(),
+            'economies' => $economies,
         ]);
     }
 
-    private function conseil(ClaudeService $claude, Port $port, string $ville, ?array $route): string
+    private function conseil(ClaudeService $claude, Port $port, string $ville, ?array $route, array $economies): string
     {
         $dist = $route['distance_km'] ?? '?';
         $duree = $route['duree_min'] ?? '?';
@@ -57,11 +75,12 @@ class RoutingController extends Controller
 
         $prompt = "Trajet: {$port->nom} ({$port->ville}) vers {$ville}. "
             . "Distance {$dist} km, duree estimee {$duree} min. "
-            . "Donne: heure de depart conseillee pour eviter les pics de trafic, un axe a privilegier ou eviter, et le benefice (temps/carburant).";
+            . "Economie estimee vs trajet non optimise: {$economies['minutes']} min, {$economies['litres']} L gasoil, {$economies['mad']} MAD.\n"
+            . "Donne: heure de depart conseillee pour eviter les pics de trafic, un axe a privilegier ou eviter, et chiffre le benefice (min + litres + MAD).";
 
         $mock = "Brief chauffeur : départ conseillé à 5h30 pour sortir de {$port->ville} avant le pic du matin. "
             . "Privilégiez l'autoroute A1/A3 plutôt que les axes urbains saturés en heure de pointe. "
-            . "Sur ce trajet de {$dist} km (~{$duree} min), vous gagnez ~25 min et réduisez la conso carburant.";
+            . "Sur ce trajet de {$dist} km, vous gagnez ~{$economies['minutes']} min, économisez {$economies['litres']} L de gasoil (~{$economies['mad']} MAD).";
 
         return $claude->ask($system, $prompt, $mock);
     }
