@@ -58,7 +58,18 @@ class PortController extends Controller
 
         $best = $forecast['best'];
         $economies = $savings->port($forecast['rows'], $best);
-        $reco = $this->reco($claude, $port, $best, $forecast['rows'], $sentiment, $arrivals->count(), $economies);
+
+        // Evaluation temps reel EXPLICABLE (aujourd'hui) : 4 facteurs dont navires AIS
+        $today = $forecast['rows'][0] ?? null;
+        $navalPressure = $sat->navalPressure($arrivals->count(), $nearby->count());
+        $assessment = $sat->assess(
+            $today['saturation_pct'] ?? 0,
+            $today['meteo_score'] ?? 100,
+            $sentiment['score'],
+            $navalPressure,
+        );
+
+        $reco = $this->reco($claude, $port, $best, $forecast['rows'], $sentiment, $arrivals->count(), $economies, $assessment);
 
         return view('port', [
             'ports' => $ports,
@@ -67,6 +78,8 @@ class PortController extends Controller
             'reco' => $reco,
             'headlines' => $headlines,
             'sentiment' => $sentiment,
+            'assessment' => $assessment,
+            'navalPressure' => $navalPressure,
             'nearby' => $nearby,
             'nearbyJs' => $nearbyJs,
             'arrivals' => $arrivals,
@@ -75,26 +88,33 @@ class PortController extends Controller
         ]);
     }
 
-    private function reco(ClaudeService $claude, Port $port, array $best, array $rows, array $sentiment, int $arrivals, array $economies): string
+    private function reco(ClaudeService $claude, Port $port, array $best, array $rows, array $sentiment, int $arrivals, array $economies, array $assessment): string
     {
         $resume = collect($rows)->map(fn ($r) =>
             "{$r['label_jour']}: saturation {$r['saturation_pct']}%, meteo {$r['meteo_score']}/100, sentiment eco {$r['news_sentiment']}, risque {$r['risk']}/100"
         )->implode("\n");
 
-        $system = "Tu es LogiMind, copilote logistique IA pour l'import-export au Maroc. "
+        $facteurs = collect($assessment['factors'])->map(fn ($f) =>
+            "{$f['label']}: {$f['raw']}/100 (poids {$f['weight']}, {$f['note']})"
+        )->implode("; ");
+
+        $system = "Tu es SmartPort, copilote logistique IA pour l'import-export au Maroc. "
             . "Tu conseilles importateurs/exportateurs sur le meilleur creneau pour faire arriver/partir des conteneurs, "
             . "en evitant saturation portuaire, mauvaise meteo marine et contexte economique defavorable. "
             . "Reponds en francais, ton professionnel et concret, 3-4 phrases max. Pas de markdown.";
 
         $prompt = "Port: {$port->nom} ({$port->ville}).\n"
+            . "Risque temps reel aujourd'hui: {$assessment['risk']}/100, facteur dominant: {$assessment['driver']}.\n"
+            . "Detail des facteurs: {$facteurs}.\n"
             . "Navires actuellement attendus a ce port (AIS): {$arrivals}.\n"
             . "Contexte economique actuel (actualite reelle): {$sentiment['resume']} (sentiment {$sentiment['score']}/100).\n"
             . "Previsions 7 jours:\n{$resume}\n\n"
             . "Le meilleur creneau identifie est {$best['label_jour']} (risque {$best['risk']}/100). "
             . "Economie estimee sur ce creneau: {$economies['mad']} MAD et {$economies['heures']}h d'attente evitees.\n"
-            . "Donne une recommandation claire: quel jour viser, pourquoi, et chiffre le benefice (MAD + heures economisees).";
+            . "Donne une recommandation: cite le facteur dominant du risque actuel, indique quel jour viser et pourquoi, "
+            . "et chiffre le benefice (MAD + heures economisees). 3-4 phrases.";
 
-        $mock = "Recommandation LogiMind : visez une arrivée le {$best['label_jour']} sur {$port->nom}. "
+        $mock = "Recommandation SmartPort : visez une arrivée le {$best['label_jour']} sur {$port->nom}. "
             . "Le risque de saturation y est le plus bas ({$best['risk']}/100), avec une fenêtre météo favorable. "
             . "Contexte économique : {$sentiment['resume']} "
             . "En ciblant ce créneau, vous économisez environ {$economies['mad']} MAD de surestaries et {$economies['heures']}h d'attente au mouillage.";

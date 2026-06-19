@@ -7,16 +7,26 @@ use App\Services\ClaudeService;
 use App\Services\PortSaturationService;
 use App\Services\RoutingService;
 use App\Services\SavingsService;
+use App\Services\SeaRouteService;
 use Illuminate\Http\Request;
 
 class ParcoursController extends Controller
 {
+    /** Coords des villes d'origine (branche maritime). */
+    private array $geo = [
+        'Shanghai' => [31.2304, 121.4737], 'Ningbo' => [29.8683, 121.5440],
+        'Shenzhen' => [22.5431, 114.0579], 'Istanbul' => [41.0082, 28.9784],
+        'Valence' => [39.4699, -0.3763], 'Rotterdam' => [51.9244, 4.4777],
+        'Marseille' => [43.2965, 5.3698],
+    ];
+
     public function index(
         Request $request,
         PortSaturationService $sat,
         RoutingService $routing,
         SavingsService $savings,
         ClaudeService $claude,
+        SeaRouteService $seaRoute,
     ) {
         $shipments = Shipment::with('port')->get();
         $selectedId = (int) $request->query('shipment', $shipments->first()?->id);
@@ -27,6 +37,10 @@ class ParcoursController extends Controller
         $forecast = $sat->forecast($port);
         $best = $forecast['best'];
         $ecoPort = $savings->port($forecast['rows'], $best);
+
+        // Branche maritime origine -> port (suit les mers)
+        $origin = $this->geocode($shipment->origine, $port);
+        $seaPath = $seaRoute->path($origin[0], $origin[1], $port->lat, $port->lng);
 
         // Etape 2 — terre : itineraire port -> ville + economies trajet
         $route = $routing->route($port->lat, $port->lng, $shipment->dest_lat, $shipment->dest_lng);
@@ -40,8 +54,18 @@ class ParcoursController extends Controller
 
         return view('parcours', compact(
             'shipments', 'shipment', 'port', 'forecast', 'best',
-            'ecoPort', 'route', 'ecoRoute', 'totalMad', 'decision', 'routeJs'
+            'ecoPort', 'route', 'ecoRoute', 'totalMad', 'decision', 'routeJs', 'origin', 'seaPath'
         ));
+    }
+
+    private function geocode(string $origine, $port): array
+    {
+        foreach ($this->geo as $ville => $coords) {
+            if (stripos($origine, $ville) !== false) {
+                return $coords;
+            }
+        }
+        return [$port->lat + 6, $port->lng - 10];
     }
 
     private function decision(ClaudeService $claude, Shipment $shipment, array $best, ?array $route, int $totalMad): string
@@ -49,7 +73,7 @@ class ParcoursController extends Controller
         $ville = $shipment->destination_ville;
         $km = $route['distance_km'] ?? '?';
 
-        $system = "Tu es LogiMind, copilote logistique IA au Maroc. Resume la decision optimale pour un conteneur "
+        $system = "Tu es SmartPort, copilote logistique IA au Maroc. Resume la decision optimale pour un conteneur "
             . "en UNE phrase percutante, format: 'Partez [quand], route vers [ville], economisez [montant].' "
             . "Francais, direct, pas de markdown.";
 

@@ -14,7 +14,7 @@
                 votre marchandise sans friction.
             </h1>
             <p class="mt-5 text-slate-300 text-lg leading-relaxed">
-                LogiMind transforme météo marine, contexte économique et trafic urbain en décisions simples :
+                SmartPort transforme météo marine, contexte économique et trafic urbain en décisions simples :
                 <em>partez à ce moment, prenez cette route, économisez temps et argent.</em>
             </p>
             <div class="mt-7 flex flex-wrap gap-3">
@@ -97,7 +97,7 @@
             <div class="text-xs font-bold uppercase tracking-widest text-brand">Étape 2 · Côté terre</div>
             <h3 class="mt-2 text-xl font-bold text-white">Fluidité urbaine</h3>
             <p class="mt-2 text-slate-300 leading-relaxed">
-                Une fois au port, LogiMind analyse le trafic et génère un itinéraire intelligent pour les
+                Une fois au port, SmartPort analyse le trafic et génère un itinéraire intelligent pour les
                 chauffeurs — sortir du port et traverser la ville sans embouteillages.
             </p>
             <a href="{{ route('routing') }}" class="mt-4 inline-block text-brand font-semibold">Tracer un itinéraire →</a>

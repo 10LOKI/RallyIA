@@ -37,6 +37,89 @@ class PortSaturationService
         };
     }
 
+    /** Ponderation du modele de risque temps reel (somme = 1). */
+    private const WEIGHTS = [
+        'saturation' => 0.35,
+        'navires'    => 0.25,
+        'meteo'      => 0.25,
+        'economie'   => 0.15,
+    ];
+
+    /**
+     * Pression navale 0..100 a partir des signaux AIS:
+     * navires attendus (poids fort) + navires a proximite (poids faible).
+     */
+    public function navalPressure(int $arrivals, int $nearby): int
+    {
+        return (int) round(min(100, $arrivals * 14 + $nearby * 2.5));
+    }
+
+    /**
+     * Evaluation temps reel EXPLICABLE du risque de saturation.
+     * Retourne le score + la contribution detaillee de chaque facteur (pour le jury).
+     */
+    public function assess(int $saturation, int $meteo, int $sentiment, int $navalPressure): array
+    {
+        $raw = [
+            'saturation' => $this->clamp($saturation),
+            'navires'    => $this->clamp($navalPressure),
+            'meteo'      => $this->clamp(100 - $meteo),
+            'economie'   => $this->clamp(100 - ($sentiment + 100) / 2),
+        ];
+
+        $factors = [];
+        $risk = 0.0;
+        foreach (self::WEIGHTS as $key => $weight) {
+            $contribution = $raw[$key] * $weight;
+            $risk += $contribution;
+            $factors[] = [
+                'key' => $key,
+                'label' => $this->factorLabel($key),
+                'raw' => (int) round($raw[$key]),
+                'weight' => $weight,
+                'contribution' => round($contribution, 1),
+                'note' => $this->factorNote($key, $raw[$key]),
+            ];
+        }
+
+        // facteur dominant = plus grosse contribution
+        usort($factors, fn ($a, $b) => $b['contribution'] <=> $a['contribution']);
+        $risk = (int) round(min(100, max(0, $risk)));
+
+        return [
+            'risk' => $risk,
+            'level' => $this->level($risk),
+            'factors' => $factors,
+            'driver' => $factors[0]['label'],
+        ];
+    }
+
+    private function clamp(float $v): float
+    {
+        return min(100, max(0, $v));
+    }
+
+    private function factorLabel(string $key): string
+    {
+        return match ($key) {
+            'saturation' => 'Saturation portuaire',
+            'navires'    => 'Pression navale (AIS)',
+            'meteo'      => 'Météo marine',
+            'economie'   => 'Contexte économique',
+        };
+    }
+
+    private function factorNote(string $key, float $raw): string
+    {
+        $niveau = $raw >= 60 ? 'élevé' : ($raw >= 35 ? 'modéré' : 'faible');
+        return match ($key) {
+            'saturation' => "Taux de remplissage {$niveau}",
+            'navires'    => "Afflux de navires {$niveau}",
+            'meteo'      => $raw >= 50 ? 'Conditions dégradées' : 'Fenêtre favorable',
+            'economie'   => $raw >= 50 ? 'Climat défavorable' : 'Climat porteur',
+        };
+    }
+
     /**
      * Retourne les conditions 7j d'un port avec score calcule + meilleur creneau.
      */

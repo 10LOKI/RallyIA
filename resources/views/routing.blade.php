@@ -56,7 +56,7 @@
                 <div class="relative">
                     <div class="flex items-center gap-2 text-brand font-bold text-sm">
                         <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">🚚</span>
-                        Brief chauffeur · LogiMind IA
+                        Brief chauffeur · SmartPort IA
                     </div>
                     <p class="mt-4 text-white leading-relaxed">{{ $conseil }}</p>
                 </div>

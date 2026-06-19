@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'LogiMind') — Copilote logistique IA</title>
+    <title>@yield('title', 'SmartPort') — Copilote logistique IA</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -46,15 +46,16 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
             <div class="h-16 flex items-center justify-between gap-3">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 shrink-0">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-deep grid place-items-center text-ink font-extrabold text-lg">L</div>
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-deep grid place-items-center text-ink font-extrabold text-lg">S</div>
                     <div>
-                        <div class="font-extrabold tracking-tight leading-none text-white">LogiMind <span class="text-brand">Maroc</span></div>
+                        <div class="font-extrabold tracking-tight leading-none text-white">SmartPort <span class="text-brand">Maroc</span></div>
                         <div class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Copilote logistique IA</div>
                     </div>
                 </a>
                 {{-- nav desktop --}}
                 <nav class="hidden lg:flex items-center gap-1 text-sm">
                     <a href="{{ route('dashboard') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('dashboard') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Tableau de bord</a>
+                    <a href="{{ route('tracking') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('tracking') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Suivi live</a>
                     <a href="{{ route('parcours') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('parcours') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Parcours</a>
                     <a href="{{ route('planification') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('planification') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Planification ETA</a>
                     <a href="{{ route('port') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('port') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Portuaire</a>
@@ -67,6 +68,7 @@
             {{-- nav mobile (scrollable) --}}
             <nav class="lg:hidden flex items-center gap-1 text-sm overflow-x-auto pb-2 -mt-1">
                 <a href="{{ route('dashboard') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('dashboard') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Tableau de bord</a>
+                <a href="{{ route('tracking') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('tracking') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Suivi live</a>
                 <a href="{{ route('parcours') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('parcours') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Parcours</a>
                 <a href="{{ route('planification') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('planification') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Planification ETA</a>
                 <a href="{{ route('port') }}" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition {{ request()->routeIs('port') ? 'bg-white/10 text-white' : 'text-slate-300' }}">Portuaire</a>
@@ -80,7 +82,7 @@
     </main>
 
     <footer class="max-w-7xl mx-auto px-6 py-10 text-xs text-slate-500 border-t border-white/5 mt-10">
-        LogiMind Maroc — MVP démo · Mer → Terre · {{ now()->year }}
+        SmartPort Maroc — MVP démo · Mer → Terre · {{ now()->year }}
     </footer>
 
     @stack('scripts')

@@ -31,6 +31,28 @@ Clés : NewsAPI ✅ live · OSRM ✅ live · aisstream ⚠️ clé rejetée (nav
 - [x] Polish responsive (header mobile scrollable, tables overflow, padding).
 - [ ] Scénario démo scripté + relire tout en vrai.
 
+## Pages (6)
+`/` dashboard · `/suivi` tracking live mer+ville · `/parcours` timeline · `/planification` ETA prédictive · `/portuaire` saturation+risque explicable · `/fluidite` routing.
+
+## Suivi live (`/suivi`)
+Traçabilité bout-en-bout d'un conteneur selon son statut (`TrackingController`) :
+- Phase **mer** : navire AIS, position interpolée origine→port, ligne maritime parcourue/restante.
+- Phase **port** : au port.
+- Phase **terre** : camion le long de la route OSRM (interpolation JS sur la polyline), distance restante.
+- Phase **livré**.
+- Timeline statut (🏭→🌊→⚓→🚚→📦) + auto-refresh 20s (effet live).
+- Seeder : 4 conteneurs couvrant toutes les phases (LM-0042 mer, 0043 port, 0044 terre, 0045 livré).
+
+## Logique métier (renforcée pour jury)
+- **Score risque explicable** (`PortSaturationService::assess`) : 4 facteurs pondérés — Saturation 35%, Pression navale AIS 25%, Météo 25%, Économie 15%. Panneau « Décomposition du risque » sur /portuaire (contribution + facteur dominant). Formule `Σ(facteur×poids)` affichée.
+- **ETA prédictive réaliste** (`PredictionService`) :
+  - Fourchettes transit réelles par port (Asie/Europe → Maroc), ex Shanghai 30-42j.
+  - Direct vs **transbordement** (hubs Singapour/Colombo/Le Pirée) : +3 à +6j.
+  - **FCL vs LCL** (groupage) : +2 à +4j consolidation.
+  - Retards explicables : météo + congestion (lue sur la prévision du port d'arrivée) + douane.
+  - 3 scénarios **optimiste / réaliste / pessimiste** + indice de confiance (variance + risque + escale + groupage + fiabilité armateur).
+  - **N° B/L** déterministe + suivi **Searates** + choix armateur (CMA CGM/Maersk/MSC/Hapag-Lloyd).
+
 ## IA — note perf
 qwen2.5:3b sur CPU : ~5-15s/réponse. Pages /portuaire fait 2 appels (reco+sentiment). Pour démo fluide : charger chaque page 1× avant de présenter (warm-up). Sentiment déjà caché 30min.
 

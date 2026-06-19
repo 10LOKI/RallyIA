@@ -3,7 +3,7 @@
 namespace App\Services;
 
 /**
- * Estimations d'economies LogiMind (chiffres pour le jury).
+ * Estimations d'economies SmartPort (chiffres pour le jury).
  * Hypotheses calibrees, transparentes — affichees comme "estimations".
  */
 class SavingsService

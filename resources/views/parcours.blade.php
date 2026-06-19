@@ -26,7 +26,7 @@
             <div class="max-w-2xl">
                 <div class="flex items-center gap-2 text-brand font-bold text-sm">
                     <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">✦</span>
-                    Décision LogiMind
+                    Décision SmartPort
                 </div>
                 <p class="mt-3 text-2xl font-bold text-white leading-snug">{{ $decision }}</p>
             </div>
@@ -115,21 +115,31 @@
     const map = L.map('map', { zoomControl: true, attributionControl: false });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
+    const origin = [{{ $origin[0] }}, {{ $origin[1] }}];
     const port = [{{ $port->lat }}, {{ $port->lng }}];
     const dest = [{{ $shipment->dest_lat }}, {{ $shipment->dest_lng }}];
+    const seaPath = @json($seaPath);
 
+    const homeIcon = L.divIcon({ html: '<div style="font-size:20px">🏭</div>', className: '', iconSize: [22,22], iconAnchor: [11,11] });
     const portIcon = L.divIcon({ html: '<div style="font-size:22px;filter:drop-shadow(0 0 5px rgba(16,229,164,.7))">⚓</div>', className: '', iconSize: [24,24], iconAnchor: [12,12] });
     const destIcon = L.divIcon({ html: '<div style="font-size:22px;filter:drop-shadow(0 0 5px rgba(244,63,94,.7))">📦</div>', className: '', iconSize: [24,24], iconAnchor: [12,12] });
 
-    L.marker(port, { icon: portIcon }).addTo(map).bindPopup('<b>{{ $port->nom }}</b><br>Étape 1 · Mer');
-    L.marker(dest, { icon: destIcon }).addTo(map).bindPopup('<b>{{ $shipment->destination_ville }}</b><br>Livraison');
+    // Étape 1 — branche maritime (origine -> port)
+    L.polyline(seaPath, { color: '#06b6d4', weight: 3, opacity: 0.85 }).addTo(map);
+    L.marker(origin, { icon: homeIcon }).addTo(map).bindPopup('<b>{{ $shipment->origine }}</b><br>Origine');
+    L.marker(port, { icon: portIcon }).addTo(map).bindPopup('<b>{{ $port->nom }}</b><br>Arrivée port · Étape 1');
+    L.marker(dest, { icon: destIcon }).addTo(map).bindPopup('<b>{{ $shipment->destination_ville }}</b><br>Livraison · Étape 2');
 
+    // Étape 2 — branche terrestre (port -> ville)
     const geo = @json($routeJs);
+    const all = seaPath.slice();
     if (geo) {
         const line = L.geoJSON(geo, { style: { color: '#10e5a4', weight: 5, opacity: 0.9 } }).addTo(map);
-        map.fitBounds(line.getBounds(), { padding: [60, 60] });
+        line.getBounds() && map.fitBounds(L.latLngBounds(seaPath).extend(line.getBounds()), { padding: [50, 50] });
     } else {
-        map.fitBounds([port, dest], { padding: [70, 70] });
+        L.polyline([port, dest], { color: '#10e5a4', weight: 3, opacity: 0.5, dashArray: '6 8' }).addTo(map);
+        all.push(dest);
+        map.fitBounds(all, { padding: [60, 60] });
     }
 </script>
 @endpush

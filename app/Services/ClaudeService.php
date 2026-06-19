@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Couche IA LogiMind. Route vers le moteur configure (LLM_PROVIDER):
+ * Couche IA SmartPort. Route vers le moteur configure (LLM_PROVIDER):
  *   ollama    -> modele local (gratuit)
  *   anthropic -> Claude API
  *   mock      -> texte fige fourni par l'appelant
@@ -17,12 +18,26 @@ class ClaudeService
     public function ask(string $system, string $prompt, ?string $mock = null): string
     {
         $provider = config('services.llm.provider', 'mock');
+        $model = config("services.{$provider}.model", '');
 
-        return match ($provider) {
+        // Cache des reponses LLM => pages instantanees apres le 1er chargement (demo fluide).
+        $cacheKey = 'llm:' . md5($provider . '|' . $model . '|' . $system . '|' . $prompt);
+        if (($hit = Cache::get($cacheKey)) !== null) {
+            return $hit;
+        }
+
+        $result = match ($provider) {
             'ollama'    => $this->ollama($system, $prompt, $mock),
             'anthropic' => $this->anthropic($system, $prompt, $mock),
             default     => $mock ?? '[Mode démo]',
         };
+
+        // Ne cache pas les placeholders d'erreur (commencent par '[').
+        if ($result !== '' && !str_starts_with($result, '[')) {
+            Cache::put($cacheKey, $result, now()->addMinutes(30));
+        }
+
+        return $result;
     }
 
     private function ollama(string $system, string $prompt, ?string $mock): string

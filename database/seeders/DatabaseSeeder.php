@@ -92,5 +92,29 @@ class DatabaseSeeder extends Seeder
             'dest_lng' => -6.8416,
             'statut' => 'au_port',
         ]);
+
+        // Conteneur en transit urbain (demo suivi terrestre)
+        Shipment::create([
+            'port_id' => $tanger->id,
+            'reference' => 'LM-2026-0044',
+            'marchandise' => 'Pieces automobiles',
+            'origine' => 'Valence, Espagne',
+            'destination_ville' => 'Tetouan',
+            'dest_lat' => 35.5711,
+            'dest_lng' => -5.3724,
+            'statut' => 'en_route',
+        ]);
+
+        // Conteneur livre
+        Shipment::create([
+            'port_id' => $casa->id,
+            'reference' => 'LM-2026-0045',
+            'marchandise' => 'Electromenager',
+            'origine' => 'Marseille, France',
+            'destination_ville' => 'Mohammedia',
+            'dest_lat' => 33.6861,
+            'dest_lng' => -7.3829,
+            'statut' => 'livre',
+        ]);
     }
 }

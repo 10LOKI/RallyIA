@@ -27,7 +27,7 @@
             <div class="md:col-span-2">
                 <div class="flex items-center gap-2 text-brand font-bold text-sm">
                     <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">✦</span>
-                    Recommandation LogiMind IA
+                    Recommandation SmartPort IA
                 </div>
                 <p class="mt-4 text-xl text-white leading-relaxed font-medium">{{ $reco }}</p>
             </div>
@@ -53,6 +53,49 @@
                 </div>
             </div>
         </div>
+    </section>
+
+    {{-- DECOMPOSITION DU RISQUE (explicabilite) --}}
+    <section class="glass rounded-2xl p-6 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">🧮</span>
+                    <h3 class="font-bold text-white">Décomposition du risque — temps réel</h3>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">Modèle pondéré multi-facteurs · facteur dominant : <span class="text-brand font-semibold">{{ $assessment['driver'] }}</span></p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="text-3xl font-extrabold tabular-nums" style="color: {{ $assessment['level']['hex'] }}">{{ $assessment['risk'] }}</div>
+                    <div class="text-[10px] text-slate-400 uppercase">risque /100</div>
+                </div>
+                <span class="text-xs font-bold px-3 py-1.5 rounded-full" style="background: {{ $assessment['level']['hex'] }}1a; color: {{ $assessment['level']['hex'] }}">{{ $assessment['level']['label'] }}</span>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            @foreach ($assessment['factors'] as $f)
+                <div>
+                    <div class="flex items-center justify-between text-sm mb-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-white font-medium">{{ $f['label'] }}</span>
+                            <span class="text-[10px] text-slate-500 bg-white/5 px-1.5 py-0.5 rounded">poids {{ (int)($f['weight']*100) }}%</span>
+                            <span class="text-xs text-slate-400">· {{ $f['note'] }}</span>
+                        </div>
+                        <div class="text-slate-300">
+                            <span class="font-semibold text-white">{{ $f['raw'] }}</span><span class="text-slate-500">/100</span>
+                            <span class="text-brand text-xs ml-2">+{{ $f['contribution'] }} pts</span>
+                        </div>
+                    </div>
+                    <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500"
+                             style="width: {{ $f['raw'] }}%; background: {{ $f['raw'] >= 60 ? '#f43f5e' : ($f['raw'] >= 35 ? '#f59e0b' : '#10b981') }}"></div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        <p class="mt-5 text-[11px] text-slate-500">Score = Σ (facteur × poids). Les signaux navires proviennent du flux AIS {{ $vesselsLive ? '(temps réel)' : '(démo)' }}.</p>
     </section>
 
     <div class="grid lg:grid-cols-5 gap-6">
