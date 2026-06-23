@@ -53,11 +53,33 @@
             content:""; position:absolute; inset:0;
             box-shadow: inset 0 0 120px 30px rgba(10,15,31,.9);
         }
-        @media (prefers-reduced-motion: reduce) { .video-bg { display:none; } }
+
+        /* Global ambient video behind the whole app (every page) */
+        .site-video { position:fixed; inset:0; overflow:hidden; container-type:size; z-index:-2; }
+        .site-video iframe {
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            width:max(100cqw, 177.78cqh); height:max(100cqh, 56.26cqw);
+            border:0; pointer-events:none;
+        }
+        .site-video-veil { /* keep maps, tables and text readable over the footage */
+            position:fixed; inset:0; z-index:-1; pointer-events:none;
+            background:
+                radial-gradient(1200px 600px at 80% -10%, rgba(14,42,63,.55) 0%, transparent 55%),
+                linear-gradient(180deg, rgba(10,15,31,.86) 0%, rgba(10,15,31,.92) 100%);
+        }
+        @media (prefers-reduced-motion: reduce) { .video-bg, .site-video { display:none; } }
     </style>
     @stack('head')
 </head>
 <body class="font-sans text-slate-200 antialiased min-h-screen">
+
+    {{-- Ambient cargo-ship footage behind the whole app (muted, looping, decorative) --}}
+    <div class="site-video" aria-hidden="true">
+        <iframe
+            src="https://www.youtube.com/embed/wQMx7wc4jh8?autoplay=1&mute=1&loop=1&playlist=wQMx7wc4jh8&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0&start=3"
+            title="Vue drone porte-conteneurs" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+    <div class="site-video-veil" aria-hidden="true"></div>
 
     <header class="sticky top-0 z-30 glass">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
