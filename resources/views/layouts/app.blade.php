@@ -41,6 +41,19 @@
         @keyframes aispin { to { transform: rotate(360deg) } }
         [data-ai][data-ai-loading="1"] { animation: aipulse 1.4s ease-in-out infinite; }
         @keyframes aipulse { 0%,100% { opacity:.55 } 50% { opacity:.9 } }
+
+        /* Cinematic video background (cover-fit relative to its container) */
+        .video-bg { position:absolute; inset:0; overflow:hidden; container-type:size; z-index:0; }
+        .video-bg iframe {
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            width:max(100cqw, 177.78cqh); height:max(100cqh, 56.26cqw);
+            border:0; pointer-events:none;
+        }
+        .video-bg::after { /* gentle vignette so edges fade into the panel */
+            content:""; position:absolute; inset:0;
+            box-shadow: inset 0 0 120px 30px rgba(10,15,31,.9);
+        }
+        @media (prefers-reduced-motion: reduce) { .video-bg { display:none; } }
     </style>
     @stack('head')
 </head>

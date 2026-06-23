@@ -3,9 +3,18 @@
 
 @section('content')
     {{-- HERO --}}
-    <section class="relative overflow-hidden rounded-3xl glass glow p-10 mb-10">
-        <div class="absolute -top-24 -right-24 w-80 h-80 bg-brand/20 blur-3xl rounded-full animate-floaty"></div>
-        <div class="relative max-w-3xl">
+    <section class="relative overflow-hidden rounded-3xl glass glow p-10 mb-10 min-h-[420px] flex">
+        {{-- Cinematic cargo-ship drone footage (muted, looping, decorative) --}}
+        <div class="video-bg">
+            <iframe
+                src="https://www.youtube.com/embed/wQMx7wc4jh8?autoplay=1&mute=1&loop=1&playlist=wQMx7wc4jh8&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0&start=3"
+                title="Vue drone porte-conteneurs" allow="autoplay; encrypted-media" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        </div>
+        {{-- Readability veil: opaque on the text side, transparent toward the footage --}}
+        <div class="absolute inset-0 z-[1] bg-gradient-to-r from-ink via-ink/90 to-ink/20"></div>
+        <div class="absolute inset-0 z-[1] bg-gradient-to-t from-ink/80 via-transparent to-ink/40"></div>
+        <div class="absolute -top-24 -right-24 w-80 h-80 bg-brand/20 blur-3xl rounded-full animate-floaty z-[1]"></div>
+        <div class="relative z-10 max-w-3xl self-center">
             <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-brand bg-brand/10 px-3 py-1 rounded-full">
                 Intelligence artificielle logistique
             </span>
@@ -25,6 +34,10 @@
                     🚚 Planifier un trajet
                 </a>
             </div>
+        </div>
+        <div class="absolute bottom-5 right-6 z-10 flex items-center gap-2 text-[11px] font-semibold text-white/70 bg-black/30 backdrop-blur px-3 py-1.5 rounded-full border border-white/10">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span>
+            Flux portuaire · 4K
         </div>
     </section>
 
