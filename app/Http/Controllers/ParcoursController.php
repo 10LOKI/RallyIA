@@ -48,7 +48,12 @@ class ParcoursController extends Controller
 
         $totalMad = $ecoPort['mad'] + $ecoRoute['mad'];
 
-        $decision = $this->decision($claude, $shipment, $best, $route, $totalMad);
+        if ($request->boolean('ai')) {
+            return response()->json([
+                'decision' => $this->decision($claude, $shipment, $best, $route, $totalMad),
+            ]);
+        }
+        $decision = null;
 
         $routeJs = $route['geometry'] ?? null;
 

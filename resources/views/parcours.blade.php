@@ -28,7 +28,7 @@
                     <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">✦</span>
                     Décision SmartPort
                 </div>
-                <p class="mt-3 text-2xl font-bold text-white leading-snug">{{ $decision }}</p>
+                <p data-ai="decision" data-ai-loading="{{ $decision === null ? '1' : '0' }}" class="mt-3 text-2xl font-bold text-white leading-snug">@if($decision !== null){{ $decision }}@else<span class="text-base font-normal text-slate-400 inline-flex items-center gap-2"><span class="ai-spin"></span> SmartPort calcule la décision optimale…</span>@endif</p>
             </div>
             <div class="text-right">
                 <div class="text-5xl font-extrabold grad-text tabular-nums">{{ number_format($totalMad, 0, ',', ' ') }}</div>

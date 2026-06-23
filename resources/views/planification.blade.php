@@ -132,7 +132,7 @@
                     <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">✦</span>
                     Analyse prédictive — SmartPort IA
                 </div>
-                <p class="mt-4 text-white leading-relaxed">{{ $analyse }}</p>
+                <p data-ai="analyse" data-ai-loading="{{ $analyse === null ? '1' : '0' }}" class="mt-4 text-white leading-relaxed">@if($analyse !== null){{ $analyse }}@else<span class="text-base text-slate-400 inline-flex items-center gap-2"><span class="ai-spin"></span> SmartPort analyse l'ETA, la météo et la congestion…</span>@endif</p>
             </section>
         </div>
 
@@ -210,7 +210,7 @@
                     <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">💡</span>
                     Conseils SmartPort — optimiser & sécuriser
                 </div>
-                <p class="mt-4 text-white leading-relaxed text-[15px]">{{ $conseils }}</p>
+                <p data-ai="conseils" data-ai-loading="{{ $conseils === null ? '1' : '0' }}" class="mt-4 text-white leading-relaxed text-[15px]">@if($conseils !== null){{ $conseils }}@else<span class="text-sm text-slate-400 inline-flex items-center gap-2"><span class="ai-spin"></span> SmartPort prépare les conseils d'optimisation…</span>@endif</p>
             </div>
         </div>
     </section>

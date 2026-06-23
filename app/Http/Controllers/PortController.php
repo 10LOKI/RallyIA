@@ -69,7 +69,13 @@ class PortController extends Controller
             $navalPressure,
         );
 
-        $reco = $this->reco($claude, $port, $best, $forecast['rows'], $sentiment, $arrivals->count(), $economies, $assessment);
+        // Texte IA differé (chargé en AJAX -> spinner sur la page)
+        if ($request->boolean('ai')) {
+            return response()->json([
+                'reco' => $this->reco($claude, $port, $best, $forecast['rows'], $sentiment, $arrivals->count(), $economies, $assessment),
+            ]);
+        }
+        $reco = null;
 
         return view('port', [
             'ports' => $ports,

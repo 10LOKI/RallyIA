@@ -48,11 +48,18 @@ class PlanificationController extends Controller
         $forecast = $sat->forecast($dest);
         $pred = $prediction->predict($originKey, $dest, $depart, $type, $routing, $carrier, $forecast['rows']);
 
-        $analyse = $this->analyse($claude, $dest, $pred);
-
-        // Estimation du coût + conseils d'optimisation
+        // Estimation du coût (sans IA, affiché immédiatement)
         $cost = $costService->estimate($pred['type'], $pred['transit_base'], $pred['risk_arrivee']);
-        $conseils = $this->conseils($claude, $dest, $pred, $cost);
+
+        // Textes IA différés (chargés en AJAX -> spinners)
+        if ($request->boolean('ai')) {
+            return response()->json([
+                'analyse' => $this->analyse($claude, $dest, $pred),
+                'conseils' => $this->conseils($claude, $dest, $pred, $cost),
+            ]);
+        }
+        $analyse = null;
+        $conseils = null;
 
         $seaPath = $seaRoute->path(
             $pred['origin_coords']['lat'],

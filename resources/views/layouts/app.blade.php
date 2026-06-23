@@ -37,6 +37,10 @@
         .leaflet-container { background:#0a0f1f; border-radius: 1rem; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-thumb { background: #1e2a4a; border-radius: 8px; }
+        .ai-spin { width:15px; height:15px; border:2px solid rgba(16,229,164,.25); border-top-color:#10e5a4; border-radius:50%; display:inline-block; animation:aispin .7s linear infinite; vertical-align:-2px; }
+        @keyframes aispin { to { transform: rotate(360deg) } }
+        [data-ai][data-ai-loading="1"] { animation: aipulse 1.4s ease-in-out infinite; }
+        @keyframes aipulse { 0%,100% { opacity:.55 } 50% { opacity:.9 } }
     </style>
     @stack('head')
 </head>
@@ -86,5 +90,27 @@
     </footer>
 
     @stack('scripts')
+
+    {{-- Chargement asynchrone des textes IA (spinner -> texte) --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const els = [...document.querySelectorAll('[data-ai][data-ai-loading="1"]')];
+            if (!els.length) return;
+            const url = new URL(window.location.href);
+            url.searchParams.set('ai', '1');
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(data => {
+                    els.forEach(el => {
+                        const k = el.dataset.ai;
+                        if (data[k] != null) {
+                            el.textContent = data[k];
+                            el.setAttribute('data-ai-loading', '0');
+                        }
+                    });
+                })
+                .catch(() => els.forEach(el => { el.textContent = 'Analyse momentanément indisponible.'; el.setAttribute('data-ai-loading','0'); }));
+        });
+    </script>
 </body>
 </html>

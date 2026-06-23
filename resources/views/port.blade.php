@@ -29,7 +29,7 @@
                     <span class="w-7 h-7 rounded-lg bg-brand/15 grid place-items-center">✦</span>
                     Recommandation SmartPort IA
                 </div>
-                <p class="mt-4 text-xl text-white leading-relaxed font-medium">{{ $reco }}</p>
+                <p data-ai="reco" data-ai-loading="{{ $reco === null ? '1' : '0' }}" class="mt-4 text-xl text-white leading-relaxed font-medium">@if($reco !== null){{ $reco }}@else<span class="text-base text-slate-400 inline-flex items-center gap-2"><span class="ai-spin"></span> SmartPort analyse saturation, météo, navires et actualité…</span>@endif</p>
             </div>
             <div class="md:border-l md:border-white/10 md:pl-8 flex flex-col justify-center">
                 <div class="text-sm text-slate-400">Meilleur créneau</div>
