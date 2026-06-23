@@ -55,7 +55,7 @@
                 @endforeach
             </select>
         </div>
-        <button type="submit" class="lg:col-span-6 sm:col-span-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand to-brand-deep text-ink font-bold hover:opacity-90 transition">
+        <button type="submit" class="lg:col-span-6 sm:col-span-2 px-5 py-2.5 rounded-xl bg-brand text-ink font-bold hover:bg-brand/90 hover:-translate-y-0.5 transition">
             Prédire la fenêtre d'arrivée →
         </button>
     </form>

@@ -4,7 +4,7 @@
 @section('content')
     {{-- HERO (sits over the global ambient video; lighter veil here to let it show) --}}
     <section class="relative overflow-hidden rounded-3xl glow p-10 mb-10 min-h-[420px] flex border border-white/10"
-             style="background: linear-gradient(100deg, rgba(10,15,31,.78) 0%, rgba(10,15,31,.55) 45%, rgba(10,15,31,.15) 100%);">
+             style="background: rgba(10,15,31,.5);">
         <div class="absolute -top-24 -right-24 w-80 h-80 bg-brand/20 blur-3xl rounded-full animate-floaty z-[1]"></div>
         <div class="relative z-10 max-w-3xl self-center">
             <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-brand bg-brand/10 px-3 py-1 rounded-full">
@@ -19,7 +19,7 @@
                 <em>partez à ce moment, prenez cette route, économisez temps et argent.</em>
             </p>
             <div class="mt-7 flex flex-wrap gap-3">
-                <a href="{{ route('port') }}" class="px-5 py-3 rounded-xl bg-gradient-to-r from-brand to-brand-deep text-ink font-bold hover:opacity-90 transition">
+                <a href="{{ route('port') }}" class="px-5 py-3 rounded-xl bg-brand text-ink font-bold hover:bg-brand/90 hover:-translate-y-0.5 transition">
                     ⚓ Optimiser un port
                 </a>
                 <a href="{{ route('routing') }}" class="px-5 py-3 rounded-xl border border-white/15 text-white font-semibold hover:bg-white/5 transition">

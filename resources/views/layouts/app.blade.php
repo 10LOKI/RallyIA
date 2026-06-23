@@ -33,7 +33,7 @@
         body { background: radial-gradient(1200px 600px at 80% -10%, #0e2a3f 0%, #0a0f1f 45%) , #0a0f1f; }
         .glass { background: rgba(17,26,50,.6); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.07); }
         .glow { box-shadow: 0 0 0 1px rgba(16,229,164,.15), 0 18px 60px -20px rgba(16,229,164,.35); }
-        .grad-text { background: linear-gradient(100deg,#10e5a4,#06b6d4); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .grad-text { color: #10e5a4; }
         .leaflet-container { background:#0a0f1f; border-radius: 1rem; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-thumb { background: #1e2a4a; border-radius: 8px; }
@@ -68,6 +68,21 @@
                 linear-gradient(180deg, rgba(10,15,31,.86) 0%, rgba(10,15,31,.92) 100%);
         }
         @media (prefers-reduced-motion: reduce) { .video-bg, .site-video { display:none; } }
+
+        /* Scroll reveal + interactive motion */
+        .reveal { opacity:0; transform:translateY(18px); transition:opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1); will-change:opacity,transform; }
+        .reveal.in { opacity:1; transform:none; }
+        main .glass { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+        main .glass:hover:not(:has(.leaflet-container)) { transform: translateY(-3px); border-color: rgba(16,229,164,.28); }
+        a.navlink { position:relative; }
+        a.navlink::after { content:""; position:absolute; left:12px; right:12px; bottom:4px; height:2px; background:#10e5a4; transform:scaleX(0); transform-origin:left; transition:transform .25s ease; border-radius:2px; }
+        a.navlink:hover::after { transform:scaleX(1); }
+        header .logo-s { transition: transform .4s cubic-bezier(.2,.7,.2,1); }
+        header a:hover .logo-s { transform: rotate(-8deg) scale(1.06); }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity:1 !important; transform:none !important; }
+            main .glass:hover { transform:none; }
+        }
     </style>
     @stack('head')
 </head>
@@ -85,7 +100,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
             <div class="h-16 flex items-center justify-between gap-3">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 shrink-0">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-deep grid place-items-center text-ink font-extrabold text-lg">S</div>
+                    <div class="logo-s w-9 h-9 rounded-xl bg-brand grid place-items-center text-ink font-extrabold text-lg">S</div>
                     <div>
                         <div class="font-extrabold tracking-tight leading-none text-white">SmartPort <span class="text-brand">Maroc</span></div>
                         <div class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Copilote logistique IA</div>
@@ -93,12 +108,12 @@
                 </a>
                 {{-- nav desktop --}}
                 <nav class="hidden lg:flex items-center gap-1 text-sm">
-                    <a href="{{ route('dashboard') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('dashboard') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Tableau de bord</a>
-                    <a href="{{ route('tracking') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('tracking') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Suivi live</a>
-                    <a href="{{ route('parcours') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('parcours') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Parcours</a>
-                    <a href="{{ route('planification') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('planification') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Planification ETA</a>
-                    <a href="{{ route('port') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('port') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Portuaire</a>
-                    <a href="{{ route('routing') }}" class="px-3 py-2 rounded-lg transition {{ request()->routeIs('routing') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Fluidité urbaine</a>
+                    <a href="{{ route('dashboard') }}" class="navlink px-3 py-2 rounded-lg transition {{ request()->routeIs('dashboard') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Tableau de bord</a>
+                    <a href="{{ route('tracking') }}" class="navlink px-3 py-2 rounded-lg transition {{ request()->routeIs('tracking') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Suivi live</a>
+                    <a href="{{ route('parcours') }}" class="navlink px-3 py-2 rounded-lg transition {{ request()->routeIs('parcours') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Parcours</a>
+                    <a href="{{ route('planification') }}" class="navlink px-3 py-2 rounded-lg transition {{ request()->routeIs('planification') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Planification ETA</a>
+                    <a href="{{ route('port') }}" class="navlink px-3 py-2 rounded-lg transition {{ request()->routeIs('port') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Portuaire</a>
+                    <a href="{{ route('routing') }}" class="navlink px-3 py-2 rounded-lg transition {{ request()->routeIs('routing') ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white' }}">Fluidité urbaine</a>
                 </nav>
                 <div class="hidden lg:flex items-center gap-2 text-xs text-slate-400 shrink-0">
                     <span class="w-2 h-2 rounded-full bg-brand animate-pulse"></span> Temps réel
@@ -125,6 +140,26 @@
     </footer>
 
     @stack('scripts')
+
+    {{-- Révélation au défilement (fade-up séquencé) --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const blocks = [...document.querySelectorAll('main > *')];
+            blocks.forEach(b => b.classList.add('reveal'));
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (!e.isIntersecting) return;
+                    e.target.classList.add('in');
+                    io.unobserve(e.target);
+                });
+            }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+            blocks.forEach((b, i) => {
+                b.style.transitionDelay = (Math.min(i, 6) * 70) + 'ms';
+                io.observe(b);
+            });
+        });
+    </script>
 
     {{-- Chargement asynchrone des textes IA (spinner -> texte) --}}
     <script>

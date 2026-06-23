@@ -44,7 +44,7 @@
             <div class="flex gap-4">
                 <div class="flex flex-col items-center">
                     <div class="w-10 h-10 rounded-full bg-white/10 grid place-items-center text-lg shrink-0">🏭</div>
-                    <div class="w-0.5 flex-1 bg-gradient-to-b from-white/20 to-brand/40 my-1"></div>
+                    <div class="w-0.5 flex-1 bg-white/15 my-1"></div>
                 </div>
                 <div class="glass rounded-2xl p-5 flex-1">
                     <div class="text-xs text-slate-400 uppercase tracking-wide">Origine</div>
@@ -57,7 +57,7 @@
             <div class="flex gap-4">
                 <div class="flex flex-col items-center">
                     <div class="w-10 h-10 rounded-full bg-brand/20 grid place-items-center text-lg shrink-0">🌊</div>
-                    <div class="w-0.5 flex-1 bg-gradient-to-b from-brand/40 to-brand/40 my-1"></div>
+                    <div class="w-0.5 flex-1 bg-brand/40 my-1"></div>
                 </div>
                 <div class="glass rounded-2xl p-5 flex-1">
                     <div class="flex items-center justify-between">
@@ -77,7 +77,7 @@
             <div class="flex gap-4">
                 <div class="flex flex-col items-center">
                     <div class="w-10 h-10 rounded-full bg-brand/20 grid place-items-center text-lg shrink-0">🚚</div>
-                    <div class="w-0.5 flex-1 bg-gradient-to-b from-brand/40 to-emerald-400/40 my-1"></div>
+                    <div class="w-0.5 flex-1 bg-brand/40 my-1"></div>
                 </div>
                 <div class="glass rounded-2xl p-5 flex-1">
                     <div class="text-xs font-bold uppercase tracking-wide text-brand">Étape 2 · Fluidité urbaine</div>
