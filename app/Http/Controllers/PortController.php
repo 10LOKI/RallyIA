@@ -43,6 +43,7 @@ class PortController extends Controller
             'status' => $v->nav_status,
         ])->values();
 
+        
         $forecast = $sat->forecast($port);
 
         // Injecte le sentiment news REEL dans la condition du jour (1ere ligne) + recalcule risque

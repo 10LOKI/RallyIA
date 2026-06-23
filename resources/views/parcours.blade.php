@@ -114,6 +114,7 @@
 <script>
     const map = L.map('map', { zoomControl: true, attributionControl: false });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+    SmartPortTraffic.add(map, { shipOpacity: 0.55, portOpacity: 0.65 }); // trafic maritime ambiant
 
     const origin = [{{ $origin[0] }}, {{ $origin[1] }}];
     const port = [{{ $port->lat }}, {{ $port->lng }}];

@@ -139,6 +139,123 @@
         SmartPort Maroc — MVP démo · Mer → Terre · {{ now()->year }}
     </footer>
 
+    {{-- Trafic maritime ambiant (navires AIS + ports régionaux) — couche décorative, ne nourrit aucun calcul --}}
+    <script>
+    window.SmartPortTraffic = (function () {
+        // Couloirs maritimes (boîtes en pleine eau) : [latMin, latMax, lngMin, lngMax, densité]
+        const LANES = [
+            [35.84, 36.04, -5.92, -5.24, 14], // Détroit de Gibraltar (dense)
+            [35.55, 36.20, -4.60, -3.05, 10], // Mer d'Alboran
+            [35.00, 35.88, -6.65, -6.02,  8], // Atlantique large de Tanger/Larache
+            [33.35, 34.25, -8.55, -7.62, 10], // Atlantique large de Casablanca/Mohammedia
+            [32.10, 33.25, -9.70, -9.02,  6], // Large de Safi / Jorf Lasfar
+            [30.10, 30.78, -10.35, -9.66, 6], // Large d'Agadir
+            [35.20, 35.95, -3.55, -2.35,  7], // Méditerranée large de Nador/Al Hoceima
+            [27.30, 29.40, -13.70, -11.40, 7], // Approche des Canaries / Sud
+        ];
+        const PREFIX = ['MAERSK','MSC','CMA CGM','HAPAG','EVERGREEN','COSCO','ONE','OOCL','HMM','ZIM','APL','YANG MING','NYK','ATLAS','IBN BATTOUTA','SAHARA','RIF','SOUSS','TANGIER','CASA','AL BORAK','MARRAKECH'];
+        const SUFFIX = ['EXPRESS','TRADER','STAR','PIONEER','VOYAGER','SPIRIT','BRIDGE','HARMONY','WAVE','GLORY','HORIZON','MERIDIAN','BREEZE','SUMMIT'];
+        const TYPES = [
+            { t:'Porte-conteneurs', c:'#10e5a4' },
+            { t:'Vraquier',         c:'#f59e0b' },
+            { t:'Pétrolier',        c:'#ef4444' },
+            { t:'Cargo',            c:'#22d3ee' },
+            { t:'Roulier',          c:'#a78bfa' },
+            { t:'Pêche',            c:'#94a3b8' },
+        ];
+        const PORTS = [
+            { n:'Tanger Med',   lat:35.88, lng:-5.50, ma:true },
+            { n:'Casablanca',   lat:33.60, lng:-7.62, ma:true },
+            { n:'Mohammedia',   lat:33.72, lng:-7.39, ma:true },
+            { n:'Kénitra',      lat:34.26, lng:-6.60, ma:true },
+            { n:'Jorf Lasfar',  lat:33.13, lng:-8.62, ma:true },
+            { n:'Safi',         lat:32.30, lng:-9.25, ma:true },
+            { n:'Agadir',       lat:30.42, lng:-9.62, ma:true },
+            { n:'Nador',        lat:35.27, lng:-2.93, ma:true },
+            { n:'Al Hoceïma',   lat:35.25, lng:-3.93, ma:true },
+            { n:'Tan-Tan',      lat:28.50, lng:-11.33, ma:true },
+            { n:'Laâyoune',     lat:27.10, lng:-13.42, ma:true },
+            { n:'Dakhla',       lat:23.70, lng:-15.94, ma:true },
+            { n:'Algésiras',    lat:36.13, lng:-5.44, ma:false },
+            { n:'Gibraltar',    lat:36.14, lng:-5.35, ma:false },
+            { n:'Cádiz',        lat:36.53, lng:-6.28, ma:false },
+            { n:'Tarifa',       lat:36.01, lng:-5.61, ma:false },
+            { n:'Las Palmas',   lat:28.14, lng:-15.41, ma:false },
+            { n:'S/C Tenerife', lat:28.47, lng:-16.25, ma:false },
+        ];
+
+        // PRNG déterministe -> les positions ne sautent pas à chaque refresh
+        let seed = 73199;
+        const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+        const pick = a => a[Math.floor(rnd() * a.length)];
+
+        function buildShips() {
+            const out = [];
+            for (const [laMin, laMax, lnMin, lnMax, n] of LANES) {
+                for (let i = 0; i < n; i++) {
+                    const ty = pick(TYPES);
+                    const anchored = rnd() < 0.12;
+                    out.push({
+                        name: pick(PREFIX) + ' ' + pick(SUFFIX),
+                        type: ty.t, color: ty.c,
+                        lat: laMin + rnd() * (laMax - laMin),
+                        lng: lnMin + rnd() * (lnMax - lnMin),
+                        head: Math.floor(rnd() * 360),
+                        sog: anchored ? 0 : +(6 + rnd() * 13).toFixed(1),
+                        mmsi: 200000000 + Math.floor(rnd() * 99999999),
+                    });
+                }
+            }
+            return out;
+        }
+        const SHIPS = buildShips();
+
+        // Marqueur style traceur AIS : triangle orienté selon le cap
+        function shipIcon(color, head, anchored) {
+            const html = anchored
+                ? `<div style="width:9px;height:9px;border:1.5px solid ${color};border-radius:50%;background:transparent"></div>`
+                : `<svg width="13" height="13" viewBox="0 0 12 12" style="transform:rotate(${head}deg)">
+                       <path d="M6 0 L10.5 11 L6 8.4 L1.5 11 Z" fill="${color}" fill-opacity="0.92"/>
+                   </svg>`;
+            return L.divIcon({ html, className: '', iconSize: [13, 13], iconAnchor: [6.5, 6.5] });
+        }
+
+        function add(map, opts = {}) {
+            const g = L.layerGroup().addTo(map);
+
+            PORTS.forEach(p => {
+                const col = p.ma ? '#10e5a4' : '#64748b';
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div style="display:flex;align-items:center;gap:3px;white-space:nowrap">
+                             <span style="font-size:13px;line-height:1;color:${col};text-shadow:0 1px 3px #000">⚓</span>
+                             <span style="font-size:9px;font-weight:700;color:${col};text-shadow:0 1px 3px #000">${p.n}</span>
+                           </div>`,
+                    iconSize: [10, 10], iconAnchor: [5, 5],
+                });
+                L.marker([p.lat, p.lng], { icon, interactive: true, opacity: opts.portOpacity ?? 0.85 })
+                    .bindPopup(`<b>${p.n}</b><br>${p.ma ? 'Port marocain' : 'Port régional'}`)
+                    .addTo(g);
+            });
+
+            SHIPS.forEach(s => {
+                L.marker([s.lat, s.lng], {
+                    icon: shipIcon(s.color, s.head, s.sog === 0),
+                    opacity: opts.shipOpacity ?? 0.85,
+                    interactive: true,
+                }).bindPopup(
+                    `<b>${s.name}</b><br>${s.type}<br>` +
+                    `${s.sog === 0 ? "À l'ancre" : s.sog + ' nœuds'} · MMSI ${s.mmsi}`
+                ).addTo(g);
+            });
+
+            return g;
+        }
+
+        return { add, SHIPS, PORTS };
+    })();
+    </script>
+
     @stack('scripts')
 
     {{-- Révélation au défilement (fade-up séquencé) --}}
